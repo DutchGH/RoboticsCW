@@ -49,7 +49,7 @@ def talker():
         hello_str = "hello world %s" % rospy.get_time()
         rospy.loginfo(hello_str)
         pub.publish(hello_str)
-        rospy.loginfo(hello_str)
+        rospy.loginfo(num)
         num_pub.publish(num)
         if num == 127:
             num = 0
