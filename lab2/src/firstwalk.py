@@ -12,6 +12,42 @@ def callback(data):
 		shouldMove = False
 
 
+def moveSquare(pub, rate):
+	desired_velocity = Twist()
+	for i in range(4):
+		moveForward(pub, desired_velocity, rate)
+		rate.sleep()
+		rotate90(pub, desired_velocity, rate)
+		rate.sleep()
+
+def moveForward(pub, desired_velocity, rate):
+	global shouldMove
+	desired_velocity.linear.x = 0.2 # Backward with 0.2 m/sec.
+	for i in range(30):
+		if (shouldMove):
+			pub.publish(desired_velocity)
+			rate.sleep()
+	desired_velocity.linear.x = 0.0
+
+def rotate90(pub, desired_velocity, rate):
+	global shouldMove
+	desired_velocity.linear.x = 0.0
+	desired_velocity.angular.z = -0.2
+	for i in range(78):
+		if (shouldMove):
+			pub.publish(desired_velocity)
+			rate.sleep()
+	desired_velocity.angular.z = 0.0
+
+def moveCircle(pub, rate):
+	desired_velocity = Twist()
+	desired_velocity.linear.x = 0.2# Forward with 0.2 m/sec.
+	desired_velocity.angular.z = 0.2
+	if (shouldMove):
+		pub.publish(desired_velocity)
+		rate.sleep()
+
+
 def publisher():
 	global shouldMove
 	pub = rospy.Publisher('mobile_base/commands/velocity', Twist, queue_size=10)
@@ -20,68 +56,10 @@ def publisher():
 
 	rospy.Subscriber('mobile_base/events/bumper', BumperEvent, callback)
 
-	desired_velocity = Twist()
-	# desired_velocity.linear.x = 0.2# Forward with 0.2 m/sec.
-	# desired_velocity.angular.z = 0.5
-	# 	pub.publish(desired_velocity)
-	# 	rate.sleep()
 
-	# for i in range (30):
 	while not rospy.is_shutdown():
-		desired_velocity.linear.x = 0.2 # Backward with 0.2 m/sec.
-		for i in range(30):
-			if (shouldMove):
-				pub.publish(desired_velocity)
-				rate.sleep()
-
-		desired_velocity.linear.x = 0
-		desired_velocity.angular.z = -1.5708
-		for i in range(10):
-			if (shouldMove):
-				pub.publish(desired_velocity)
-				rate.sleep()
-
-		desired_velocity.linear.x = 0.2
-		desired_velocity.angular.z = 0
-		for i in range(30):
-			if (shouldMove):
-				pub.publish(desired_velocity)
-				rate.sleep()
-
-		desired_velocity.linear.x = 0
-		desired_velocity.angular.z = -1.5708
-		for i in range(10):
-			if (shouldMove):
-				pub.publish(desired_velocity)
-				rate.sleep()
-
-		desired_velocity.linear.x = 0.2
-		desired_velocity.angular.z = 0
-		for i in range(30):
-			if (shouldMove):
-				pub.publish(desired_velocity)
-				rate.sleep()
-
-		desired_velocity.linear.x = 0
-		desired_velocity.angular.z = -1.5708
-		for i in range(10):
-			if (shouldMove):
-				pub.publish(desired_velocity)
-				rate.sleep()
-
-		desired_velocity.linear.x = 0.2
-		desired_velocity.angular.z = 0
-		for i in range(30):
-			if (shouldMove):
-				pub.publish(desired_velocity)
-				rate.sleep()
-
-		desired_velocity.linear.x = 0
-		desired_velocity.angular.z = -1.5708
-		for i in range(10):
-			if (shouldMove):
-				pub.publish(desired_velocity)
-				rate.sleep()
+		moveSquare(pub, rate)
+		# moveCircle(pub, rate)
 
 
 if __name__ == "__main__":
