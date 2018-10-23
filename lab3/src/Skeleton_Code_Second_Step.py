@@ -82,7 +82,6 @@ def main(args):
 		print("Shutting down")
 	cv2.destroyAllWindows()
 	# And rospy.init the entire node
-	cI = colourIdentifier()
 	# Ensure that the node continues running with rospy.spin()
 	# You may need to wrap rospy.spin() in an exception handler in case of KeyboardInterrupts
 
