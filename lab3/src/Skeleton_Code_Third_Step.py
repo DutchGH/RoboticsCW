@@ -20,16 +20,13 @@ class colourIdentifier():
 
 
 		# Initialise any flags that signal a colour has been detected in view
-
+		self.colorDetected = False
 
 		# Initialise the value you wish to use for sensitivity in the colour detection (10 should be enough)
 
-
 		# Initialise some standard movement messages such as a simple move forward and a message with all zeroes (stop)
 
-		# Remember to initialise a CvBridge() and set up a subscriber to the image topic you wish to use
 
-		# We covered which topic to subscribe to should you wish to receive image data
 
 
 	def callback(self, data):
@@ -54,7 +51,8 @@ class colourIdentifier():
 		Rmask = cv2.inRange(hsv, hsv_red_lower, hsv_red_upper)
 		mask = Gmask + Bmask + Rmask
 		result = cv2.bitwise_and(cv_image, cv_image, mask= mask)
-
+		
+		#find contours in the image
 		contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 		cv2.drawContours(result, contours, -1, (0,255,0), 3)
 
@@ -71,13 +69,7 @@ class colourIdentifier():
 
 
 
-		# To combine the masks you should use the cv2.bitwise_or() method
-		# You can only bitwise_or two image at once, so multiple calls are necessary for more than two colours
 
-
-		# Apply the mask to the original image using the cv2.bitwise_and() method
-		# As mentioned on the worksheet the best way to do this is to bitwise and an image with itself and pass the mask to the mask parameter
-		# As opposed to performing a bitwise_and on the mask and the image.
 
 
 
