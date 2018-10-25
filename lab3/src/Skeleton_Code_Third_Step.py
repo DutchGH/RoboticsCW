@@ -53,8 +53,30 @@ class colourIdentifier():
 		result = cv2.bitwise_and(cv_image, cv_image, mask= mask)
 		
 		#find contours in the image
-		contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-		cv2.drawContours(result, contours, -1, (0,255,0), 3)
+		#Make an individual find contours for each mask
+		Gcontours, Ghierarchy = cv2.findContours(Gmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+		BContours  Bhierachy = cv2.findContours(Bmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+		#cv2.drawContours(result, contours, -1, (0,255,0), 3)
+		
+		if Gcontours:
+			c = max(Gcontours)
+			if cv2.contourArea(c) > 1500:
+				self.BlueDetected = True
+				(x,y),radius = cv2.minEnclosingCircle(c)
+				center = (int(x),int(y))
+				radius = int(radius)
+				cv2.circle(result,center,radius,(0,255,0),2)
+		else:
+			self.greenDetected = False
+				
+		if Bcontours:
+			c = max(Bcontours)
+			if cv2.contourArea(c) > 1500:
+				self.blue
+				(x,y),radius = cv2.minEnclosingCircle(c)
+				center = (int(x),int(y))
+				radius = int(radius)
+				cv2.circle(result,center,radius,(0,255,0),2)
 
 
 		cv2.namedWindow('Camera_Feed')
@@ -65,8 +87,7 @@ class colourIdentifier():
 
 
 
-
-
+		
 
 
 
