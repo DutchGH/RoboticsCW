@@ -65,12 +65,16 @@ class colourIdentifier():
 			print("X COORD: " + str(center[0]))
 			print("TOLERANCE: " + str(radius + sizeTolerance))
 			print("RT")
+		else:
+			self.desired_velocity.angular.z = 0
 
 
 		if area > (sizeGoal + sizeTolerance):
 			self.desired_velocity.linear.x = -0.2
 		elif area < (sizeGoal - sizeTolerance):
 			self.desired_velocity.linear.x = 0.2
+		else:
+			self.desired_velocity.linear.z = 0
 
 		self.publisher.publish(self.desired_velocity)
 

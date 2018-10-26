@@ -81,9 +81,9 @@ if __name__ == '__main__':
         navigator = GoToPose()
 
         # Customize the following values so they are appropriate for your location
-        x = # SPECIFY X COORDINATE HERE
-        y = # SPECIFY Y COORDINATE HERE
-        theta = # SPECIFY THETA (ROTATION) HERE
+        x = -6.78# SPECIFY X COORDINATE HERE
+        y = -0.854# SPECIFY Y COORDINATE HERE
+        theta = 0 # SPECIFY THETA (ROTATION) HERE
         position = {'x': x, 'y' : y}
         quaternion = {'r1' : 0.000, 'r2' : 0.000, 'r3' : np.sin(theta/2.0), 'r4' : np.cos(theta/2.0)}
 
