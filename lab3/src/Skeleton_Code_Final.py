@@ -29,8 +29,9 @@ class colourIdentifier():
 		self.colorDetected = False
 		self.blueDetected = False
 		self.greenDetected = False
+		self.moving = False
 
-		
+
 		# Initialise any flags that signal a colour has been detected in view
 
 
@@ -40,9 +41,25 @@ class colourIdentifier():
 		# Initialise some standard movement messages such as a simple move forward and a message with all zeroes (stop)
 
 		# Remember to initialise a CvBridge() and set up a subscriber to the image topic you wish to use
+	def followObject(self, c, result):
+		area = cv2.contourArea(c)
+		(x,y),radius = cv2.minEnclosingCircle(c)
+		center = (int(x),int(y))
+		radius = int(radius)
+		cv2.circle(result,center,radius,(0,255,0),2)
+		self.desired_velocity.linear.x = 0.2
+		#self.desired_velocity.angular.z = radius
+		if area > 16000:
+			self.desired_velocity.linear.x = -0.2
+			#self.desired_velocity.angular.z = radius
+		self.publisher.publish(self.desired_velocity)
 
-		# We covered which topic to subscribe to should you wish to receive image data
-	
+	def stopMovement(self):
+		self.desired_velocity.linear.x = 0
+		self.desired_velocity.angular.z = 0
+		self.publisher.publish(self.desired_velocity)
+
+
 	def callback(self, data):
 		sensitivity = 10
 		# Set the upper and lower bounds for the two colours you wish to identify
@@ -65,54 +82,45 @@ class colourIdentifier():
 		Rmask = cv2.inRange(hsv, hsv_red_lower, hsv_red_upper)
 		mask = Gmask + Bmask + Rmask
 		result = cv2.bitwise_and(cv_image, cv_image, mask= mask)
-		
+
 		#find contours in the image
 		#Make an individual find contours for each mask
-		im1, Gcontours, Ghierarchy = cv2.findContours(Gmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-		im2, Bcontours, Bhierachy = cv2.findContours(Bmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+		Gcontours, Ghierarchy = cv2.findContours(Gmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+		Bcontours, Bhierachy = cv2.findContours(Bmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 		#cv2.drawContours(result, contours, -1, (0,255,0), 3)
-		
-		if not (self.greenDetected and self.blueDetected):
-			if len(Gcontours) > 0:
-				c = max(Gcontours, key = cv2.contourArea)
-				area = cv2.contourArea(c)
-				if area > 1500:
-					self.greenDetected = True
-					(x,y),radius = cv2.minEnclosingCircle(c)
-					center = (int(x),int(y))
-					radius = int(radius)
-					cv2.circle(result,center,radius,(0,255,0),2)
-					self.desired_velocity.linear.x = 0.2
-					#self.desired_velocity.angular.z = radius
-					if area > 16000:
-						self.desired_velocity.linear.x = -0.2
-						#self.desired_velocity.angular.z = radius
-					self.publisher.publish(self.desired_velocity)
 
-				else:
-					self.greenDetected = False
-					
-			if len(Bcontours) > 0:
-				c = max(Bcontours, key = cv2.contourArea)
-				area = cv2.contourArea(c)
-				if cv2.contourArea(c) > 1500:
-					self.blueDetected = True
-					(x,y),radius = cv2.minEnclosingCircle(c)
-					center = (int(x),int(y))
-					radius = int(radius)
-					cv2.circle(result,center,radius,(255,0,0),2)
-					self.desired_velocity.linear.x = 0.2
-					#self.desired_velocity.angular.z = radius
-					if area > 16000:
-						self.desired_velocity.linear.x = -0.2
-						#self.desired_velocity.angular.z = radius
-					self.publisher.publish(self.desired_velocity)
-				else:
-					self.blueDetected = False
+		self.greenDetected = False
+		self.blueDetected = False
+		c = None
+		if len(Gcontours) > 0:
+			c = max(Gcontours, key = cv2.contourArea)
+			area = cv2.contourArea(c)
+			if area > 1500:
+				self.greenDetected = True
+			else:
+				self.greenDetected = False
+
+		if len(Bcontours) > 0:
+			c = max(Bcontours, key = cv2.contourArea)
+			area = cv2.contourArea(c)
+			if cv2.contourArea(c) > 1500:
+				self.blueDetected = True
+			else:
+				self.blueDetected = False
+
+
+		if (self.greenDetected and self.blueDetected):
+			#We have found 2 different colours - stop
+			self.movement = False
+		elif (self.greenDetected) or (self.blueDetected):
+			self.movement = True
 		else:
-			self.desired_velocity.linear.x = 0.0
-			self.desired_velocity.angular.z = 0.0
-			self.publisher.publish(self.desired_velocity)
+			self.movement = False
+
+		if self.movement:
+			self.followObject(c, result)
+		else:
+			self.stopMovement()
 
 
 
@@ -121,22 +129,22 @@ class colourIdentifier():
 		cv2.imshow('Camera_Feed', cv_image)
 		cv2.imshow('Mask_Feed', result)
 		cv2.waitKey(3)
-		
+
 		# cx, cy = int(M['m10']/M['m00']), int(M['m01']/M['m00'])
-		
+
 		#Check if the area of the shape you want is big enough to be considered
 		# If it is then change the flag for that colour to be True(1)
 			# draw a circle on the contour you're identifying as a blue object as well
 			# cv2.circle(<image>, (<center x>,<center y>), <radius>, <colour (rgb tuple)>, <thickness (defaults to 1)>)
 			# Then alter the values of any flags
-		
+
 		# Be sure to do this for the other colour as well
 		#Show the resultant images you have created. You can show all of them or just the end result if you wish to.
 
 def publisher():
 	pub = rospy.Publisher('mobile_base/commands/velocity', Twist, queue_size=10)
 	rate = rospy.Rate(10) #10hz
-	
+
 	return pub, rate
 
 # Create a node of your class in the main and ensure it stays up and running
@@ -154,5 +162,3 @@ def main(args):
 # Check if the node is executing in the main path
 if __name__ == '__main__':
 	main(sys.argv)
-
-

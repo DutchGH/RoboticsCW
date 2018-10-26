@@ -53,13 +53,13 @@ class colourIdentifier():
 		Rmask = cv2.inRange(hsv, hsv_red_lower, hsv_red_upper)
 		mask = Gmask + Bmask + Rmask
 		result = cv2.bitwise_and(cv_image, cv_image, mask= mask)
-		
+
 		#find contours in the image
 		#Make an individual find contours for each mask
-		im1, Gcontours, Ghierarchy = cv2.findContours(Gmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-		im2, Bcontours, Bhierachy = cv2.findContours(Bmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+		Gcontours, Ghierarchy = cv2.findContours(Gmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+		Bcontours, Bhierachy = cv2.findContours(Bmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 		#cv2.drawContours(result, contours, -1, (0,255,0), 3)
-		
+
 		if len(Gcontours) > 0:
 			c = max(Gcontours, key = cv2.contourArea)
 			if cv2.contourArea(c) > 1500:
@@ -70,7 +70,7 @@ class colourIdentifier():
 				cv2.circle(result,center,radius,(0,255,0),2)
 		else:
 			self.greenDetected = False
-				
+
 		if len(Bcontours) > 0:
 			c = max(Bcontours, key = cv2.contourArea)
 			if cv2.contourArea(c) > 1500:
