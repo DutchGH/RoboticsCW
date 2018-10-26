@@ -43,15 +43,35 @@ class colourIdentifier():
 		# Remember to initialise a CvBridge() and set up a subscriber to the image topic you wish to use
 	def followObject(self, c, result):
 		area = cv2.contourArea(c)
+		sizeGoal = 18000
+		horTolerance = 300
+		sizeTolerance = 2000
 		(x,y),radius = cv2.minEnclosingCircle(c)
 		center = (int(x),int(y))
 		radius = int(radius)
-		cv2.circle(result,center,radius,(0,255,0),2)
-		self.desired_velocity.linear.x = 0.2
-		#self.desired_velocity.angular.z = radius
-		if area > 16000:
+		cv2.circle(result,center,radius,(0,0,255),2)
+
+		self.desired_velocity.angular.z = 0
+		self.desired_velocity.angular.x = 0
+
+
+		if center[0] > (radius + horTolerance):
+			self.desired_velocity.angular.z = -0.1
+			print("X COORD: " + str(center[0]))
+			print("TOLERANCE: " + str(radius + sizeTolerance))
+			print("LFT")
+		elif center[0] < (radius + horTolerance):
+			self.desired_velocity.angular.z = 0.1
+			print("X COORD: " + str(center[0]))
+			print("TOLERANCE: " + str(radius + sizeTolerance))
+			print("RT")
+
+
+		if area > (sizeGoal + sizeTolerance):
 			self.desired_velocity.linear.x = -0.2
-			#self.desired_velocity.angular.z = radius
+		elif area < (sizeGoal - sizeTolerance):
+			self.desired_velocity.linear.x = 0.2
+
 		self.publisher.publish(self.desired_velocity)
 
 	def stopMovement(self):
